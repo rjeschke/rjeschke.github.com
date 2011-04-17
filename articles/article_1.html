@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>rjeschke.github.com - Windows C/C++ compiling and Eclipse</title>
+<link type="text/css" href="../css/style.css" rel="stylesheet"/>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+<table class="tmain">
+<tr><td colspan="2" class="theader">Nerds Rule The World</td></tr>
+<tr><td class="tcontent">
+<h2>Command line Windows compiling</h2>
+<p>As I am developing on different platforms (Linux &amp; Windows)
+I reached a point where I just didn't want to use a different
+IDE on each platform. And as I got really used to Eclipse
+I decided to use it as my main IDE for both Java and C/C++.</p>
+<p>My current setup consists of Windows 7 32Bit, the
+<a href="http://www.microsoft.com/downloads/en/details.aspx?FamilyID=C17BA869-9671-4330-A63E-1FD44E0E2505">Microsoft Windows SDK for Windows 7</a> and <a href="http://www.eclipse.org/downloads/">Eclipse Galileo SR2</a>. Yes, I'm still using Galileo, Helios
+somehow seems uncomfortable.</p>
+<h4>First step: Setting up environment variables</h4>
+<p>I assume you know how to set up environment variables on Windows.</p>
+<ul>
+<li><h5>INCLUDE</h5>
+You will have to include the following directories:<pre><code>C:\Program Files\Microsoft SDKs\Windows\v7.0\Include\
+C:\Program Files\Microsoft Visual Studio 9.0\VC\include\
+</code></pre>
+And if you want to do JNI:<pre><code>C:\Program Files\Java\&lt;your-JDK&gt;\include\
+C:\Program Files\Java\&lt;your-SDK&gt;\include\win32\
+</code></pre>
+</li>
+<li><h5>LIB</h5>
+You will have to include the following directories:<pre><code>C:\Program Files\Microsoft SDKs\Windows\v7.0\Lib\
+C:\Program Files\Microsoft Visual Studio 9.0\VC\lib\
+</code></pre>
+And again for JNI:<pre><code>C:\Program Files\Java\&lt;your-SDK&gt;\lib\
+</code></pre>
+</li>
+<li><h5>PATH</h5>
+These are the paths the compiler needs:<pre><code>C:\Program Files\Microsoft SDKs\Windows\v7.0\Bin\
+C:\Program Files\Microsoft Visual Studio 9.0\VC\bin\
+C:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE\
+</code></pre>
+And this one is again for JNI:<pre><code>C:\Program Files\Java\&lt;your-SDK&gt;\bin\
+</code></pre>
+</li>
+</ul>
+<p>If you're using a different Platform SDK, just use the highest version
+number inside the SDK folder, and the highest version of Visual Studio
+that contains the above mentioned paths.</p>
+<h4>Next step: Setting up Eclipse C/C++</h4>
+<ul>
+<li>Start a new C or C++ project, make it an empty makefile project.</li>
+<li>As I need to compile my stuff on different OSes, I always create a
+folder inside the project that's called 'win32' (for 32 Bit).
+I assume you do the same.</li>
+<li>In Project Properties > C/C++ Build uncheck 'Use default build command'
+and type into 'Build command:'<pre><code>nmake -f makefile.mak
+</code></pre>
+As Build Directory choose:<pre><code>${workspace_loc:/&lt;your-project&gt;/win32}
+</code></pre>
+</li>
+<li>In C/C++ Build > Settings check 'PE Windows Parser'</li>
+<li>In C/C++ General > Paths and Symbols > Includes do: Add > Variable > INCLUDE,
+just add it to all configurations and languages</li>
+<li>Sadly there's no working toolchain for Windows, so you will have to
+tell Eclipse which defines you set up in your makefile. This can be
+done in C/C++ General > Paths and Symbols</li>
+<li>My standard defines that I set up are:<pre><code>__int8      char
+__int16     short
+__int32     int
+__int64     long
+WIN32       1
+</code></pre>
+This minimizes the amount of validation errors Eclipse may produce.</li>
+</ul>
+<p>Now, all you have to do is code some stuff and write some cool makefile.</p>
+<p>And you should remap 'Ctrl+B' in Eclipse to point to 'Compile current Project'
+and not all projects.</p>
+<hr /><small>Posted: 2011-04-17</small>
+</td><td class="tnav">
+<div class="dnav">&raquo; <a href="../index.html" class="lnav">Home</a></div>
+<hr />
+<div class="dnav">&raquo; <a href="article_1.html" class="lnav">Windows C/C++ compiling and Eclipse</a></div>
+<div class="dnav">&raquo; <a href="article_0.html" class="lnav">Hello world</a></div>
+</td></tr>
+<tr><td colspan="2" class="tfooter">&copy; Ren&eacute; Jeschke in 2011</td></tr>
+</table>
+</body>
+</html>
