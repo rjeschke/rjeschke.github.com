@@ -1,0 +1,77 @@
+
+[$PROFILE$]: extended
+Command line Windows compiling
+------------------------------
+
+As I am developing on different platforms (Linux & Windows)
+I reached a point where I just didn't want to use a different
+IDE on each platform. And as I got really used to Eclipse
+I decided to use it as my main IDE for both Java and C/C++.
+
+My current setup consists of Windows 7 32Bit, the 
+[Microsoft Windows SDK for Windows 7][SDK] and [Eclipse 
+Galileo SR2][Eclipse]. Yes, I'm still using Galileo, Helios
+somehow seems uncomfortable.
+
+#### First step: Setting up environment variables ####
+
+I assume you know how to set up environment variables on Windows.
+
+*   ##### INCLUDE
+    You will have to include the following directories:
+        C:\Program Files\Microsoft SDKs\Windows\v7.0\Include\
+        C:\Program Files\Microsoft Visual Studio 9.0\VC\include\
+    And if you want to do JNI:
+        C:\Program Files\Java\<your-JDK>\include\
+        C:\Program Files\Java\<your-SDK>\include\win32\
+*   ##### LIB
+    You will have to include the following directories:
+        C:\Program Files\Microsoft SDKs\Windows\v7.0\Lib\
+        C:\Program Files\Microsoft Visual Studio 9.0\VC\lib\
+    And again for JNI:
+        C:\Program Files\Java\<your-SDK>\lib\
+*   ##### PATH
+    These are the paths the compiler needs:
+        C:\Program Files\Microsoft SDKs\Windows\v7.0\Bin\
+        C:\Program Files\Microsoft Visual Studio 9.0\VC\bin\
+        C:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE\
+    And this one is again for JNI:
+        C:\Program Files\Java\<your-SDK>\bin\
+
+If you're using a different Platform SDK, just use the highest version
+number inside the SDK folder, and the highest version of Visual Studio
+that contains the above mentioned paths.
+
+#### Next step: Setting up Eclipse C/C++ ####
+
+*   Start a new C or C++ project, make it an empty makefile project.
+*   As I need to compile my stuff on different OSes, I always create a 
+    folder inside the project that's called 'win32' (for 32 Bit).
+    I assume you do the same.
+*   In Project Properties > C/C++ Build uncheck 'Use default build command'
+    and type into 'Build command:'
+        nmake -f makefile.mak
+    As Build Directory choose:
+        ${workspace_loc:/<your-project>/win32}
+*   In C/C++ Build > Settings check 'PE Windows Parser'
+*   In C/C++ General > Paths and Symbols > Includes do: Add > Variable > INCLUDE, 
+    just add it to all configurations and languages
+*   Sadly there's no working toolchain for Windows, so you will have to
+    tell Eclipse which defines you set up in your makefile. This can be
+    done in C/C++ General > Paths and Symbols
+*   My standard defines that I set up are:
+        __int8      char
+        __int16     short
+        __int32     int
+        __int64     long
+        WIN32       1
+    This minimizes the amount of validation errors Eclipse may produce.
+
+Now, all you have to do is code some stuff and write some cool makefile.
+
+And you should remap 'Ctrl+B' in Eclipse to point to 'Compile current Project'
+and not all projects.
+
+    
+[Eclipse]: http://www.eclipse.org/downloads/
+[SDK]: http://www.microsoft.com/downloads/en/details.aspx?FamilyID=C17BA869-9671-4330-A63E-1FD44E0E2505

@@ -56,7 +56,7 @@ hr
     border-left: 1px solid #888;
     padding: 0px 0px 0px 0.5em;
     margin: 0px;
-    width: 16em;
+    width: 17em;
 }
 
 .tcontent
@@ -138,18 +138,6 @@ pre code
 p
 {
     text-align: justify;
-}
-
-p:first-letter
-{
-    margin-left: 1em;
-    font-size: 1.5em;
-}
-
-blockquote > p:first-letter
-{
-    margin-left: 0em;
-    font-size: 1.0em;
 }
 
 blockquote
