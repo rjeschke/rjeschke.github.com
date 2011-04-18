@@ -1,9 +1,19 @@
-
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>rjeschke.github.com - Windows C/C++ compiling and Eclipse (source)</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="expires" content="0" />
+</head>
+<body>
+<pre><code>
 [$PROFILE$]: extended
 Command line Windows compiling
 ------------------------------
 
-As I am developing on different platforms (Linux & Windows)
+As I am developing on different platforms (Linux &amp; Windows)
 I reached a point where I just didn't want to use a different
 IDE on each platform. And as I got really used to Eclipse
 I decided to use it as my main IDE for both Java and C/C++.
@@ -22,21 +32,21 @@ I assume you know how to set up environment variables on Windows.
         C:\Program Files\Microsoft SDKs\Windows\v7.0\Include\
         C:\Program Files\Microsoft Visual Studio 9.0\VC\include\
     And if you want to do JNI:
-        C:\Program Files\Java\<your-JDK>\include\
-        C:\Program Files\Java\<your-SDK>\include\win32\
+        C:\Program Files\Java\&lt;your-JDK&gt;\include\
+        C:\Program Files\Java\&lt;your-SDK&gt;\include\win32\
 *   ##### LIB
     You will have to include the following directories:
         C:\Program Files\Microsoft SDKs\Windows\v7.0\Lib\
         C:\Program Files\Microsoft Visual Studio 9.0\VC\lib\
     And again for JNI:
-        C:\Program Files\Java\<your-SDK>\lib\
+        C:\Program Files\Java\&lt;your-SDK&gt;\lib\
 *   ##### PATH
     These are the paths the compiler needs:
         C:\Program Files\Microsoft SDKs\Windows\v7.0\Bin\
         C:\Program Files\Microsoft Visual Studio 9.0\VC\bin\
         C:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE\
     And this one is again for JNI:
-        C:\Program Files\Java\<your-SDK>\bin\
+        C:\Program Files\Java\&lt;your-SDK&gt;\bin\
 
 If you're using a different Platform SDK, just use the highest version
 number inside the SDK folder, and the highest version of Visual Studio
@@ -48,17 +58,17 @@ that contains the above mentioned paths.
 *   As I need to compile my stuff on different OSes, I always create a 
     folder inside the project that's called 'win32' (for 32 Bit).
     I assume you do the same.
-*   In Project Properties > C/C++ Build uncheck 'Use default build command'
+*   In Project Properties &gt; C/C++ Build uncheck 'Use default build command'
     and type into 'Build command:'
         nmake -f makefile.mak
     As Build Directory choose:
-        ${workspace_loc:/<your-project>/win32}
-*   In C/C++ Build > Settings check 'PE Windows Parser'
-*   In C/C++ General > Paths and Symbols > Includes do: Add > Variable > INCLUDE, 
+        ${workspace_loc:/&lt;your-project&gt;/win32}
+*   In C/C++ Build &gt; Settings check 'PE Windows Parser'
+*   In C/C++ General &gt; Paths and Symbols &gt; Includes do: Add &gt; Variable &gt; INCLUDE, 
     just add it to all configurations and languages
 *   Sadly there's no working toolchain for Windows, so you will have to
     tell Eclipse which defines you set up in your makefile. This can be
-    done in C/C++ General > Paths and Symbols
+    done in C/C++ General &gt; Paths and Symbols
 *   My standard defines that I set up are:
         __int8      char
         __int16     short
@@ -75,3 +85,8 @@ and not all projects.
     
 [Eclipse]: http://www.eclipse.org/downloads/
 [SDK]: http://www.microsoft.com/downloads/en/details.aspx?FamilyID=C17BA869-9671-4330-A63E-1FD44E0E2505
+</code></pre>
+<hr />
+<p><a href="article_1.html">&laquo; Back to article</a></p>
+</body>
+</html>
