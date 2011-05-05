@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>rjeschke.github.com/weel</title>
+<link type="text/css" href="../css/style.css" rel="stylesheet"/>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="expires" content="0" />
+</head>
+<body>
+<table class="tmain">
+<tr><td class="theader">-- Weel --</td></tr>
+<tr><td class="tcontent" style="width: 100%">
+<h1>Weel - An extensible scripting language</h1>
+<p>Copyright &copy; 2011 René Jeschke <a href="&#x6d;&#97;&#x69;&#x6c;&#116;&#x6f;&#58;&#114;&#101;&#x6e;&#x65;&#x5f;&#x6a;&#101;&#115;&#x63;&#x68;&#107;&#x65;&#64;&#121;&#x61;&#104;&#x6f;&#x6f;&#x2e;&#x64;e">&#114;&#101;&#110;&#101;&#95;&#x6a;&#x65;&#x73;&#99;&#x68;&#x6b;&#x65;&#64;y&#97;&#x68;&#x6f;&#x6f;&#46;&#100;&#x65;</a><br />
+See LICENSE.txt for licensing information.</p>
+<hr />
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#weelruntime">Weel and Runtime</a></li>
+<li><a href="#typesandstuff">Types, names and others</a><ul>
+<li><a href="#types">Types</a></li>
+<li><a href="#names">Names</a></li>
+<li><a href="#reservedwords">Reserved words</a></li>
+<li><a href="#operators">Operators</a></li>
+</ul>
+</li>
+<li><a href="#flow">Program flow control</a><ul>
+<li><a href="#ifelse">if, elseif, else, end</a></li>
+<li><a href="#switch">switch, end</a></li>
+<li><a href="#for">for, end</a></li>
+<li><a href="#foreach">foreach, end</a></li>
+<li><a href="#doend">do, end</a></li>
+<li><a href="#dountil">do, until</a></li>
+<li><a href="#while">while, end</a></li>
+</ul>
+</li>
+<li><a href="#functions">Functions</a></li>
+<li><a href="#performance">Performance hints</a></li>
+</ul>
+<hr />
+<h3 id="overview">Overview</h3>
+<p>Weel is a dynamically typed, stack based programming language running on the
+Java&trade; Virtual Machine. Weel source code gets compiled to Java&trade; classes
+using a <em>Runtime</em> for its dynamic nature.</p>
+<p>Weel &hellip;</p>
+<ul>
+<li>&hellip; is a simple to learn but powerful language</li>
+<li>&hellip; has anonymous functions and closures</li>
+<li>&hellip; has type bound dynamic functions <em>(something like mix-ins/traits for
+Weel's base types)</em></li>
+<li>&hellip; supports multi-threading</li>
+<li>&hellip; can export pre-compiled binaries</li>
+<li>&hellip; does not depend on any libraries except the Java&trade; runtime</li>
+<li>&hellip; can easily be extended by Java&trade; methods</li>
+<li>&hellip; has built-in OOP functionality</li>
+<li>&hellip; has a built in unit test framework</li>
+<li>&hellip; uses UTF-8 for everything string/text related</li>
+<li>&hellip; is in some situations even faster than <a href="http://www.lua.org/" title="The Programming Language Lua">Lua</a></li>
+</ul>
+<hr />
+<h3 id="weelruntime">Weel and Runtime</h3>
+<p>Weel is separated into two main parts:</p>
+<ol>
+<li><code>Weel</code> &ndash; The mother class of all runtimes, giving access to a compiler
+and holding all global variables and registered functions.</li>
+<li><code>Runtime</code> &ndash; The execution environment unique to each thread and mother
+<code>Weel</code> instance.</li>
+</ol>
+<p>With this model it is possible to run Weel functions safely in a
+multithreading environment <em>(as long as you don't access global variables)</em>
+and to have different 'sets' of Weel instances each having their unique set
+of globals and functions.</p>
+<p>Weel source code gets compiled 'into' a <code>Weel</code> instance and can then be used
+from a <code>Runtime</code> retrieved by <code>Weel.getRuntime()</code>.</p>
+<p>Each source file gets internally compiled into its own Java&trade; class.</p>
+<p>It is possible to compile new sources into a <code>Weel</code> at any time. This makes
+library loading on demand possible <em>(if you only use array or OOP functions
+in the library)</em>.</p>
+<hr />
+<h3 id="typesandstuff">Types, names and others</h3>
+<h4 id="types">Types</h4>
+<ul>
+<li><p>Null: (<code>null</code>)</p>
+<pre><code>null
+</code></pre>
+</li>
+<li><p>Strings: (<code>string</code>)</p>
+<pre><code>'Hello world'
+"Hello world"
+'With " inside'
+"With ' inside"
+"With
+line break"
+</code></pre>
+<p>Allowed escape characters:</p>
+<pre><code>\n  \r  \t  \'  \"  \\
+</code></pre>
+</li>
+<li><p>Numbers: (<code>number</code>)</p>
+<ul>
+<li>Decimal:<pre><code>-10.3
+42
+1.23e-6
+</code></pre>
+</li>
+<li>Octal:<pre><code>0o777
+0O1723
+</code></pre>
+</li>
+<li>Binary:<pre><code>0b11001010
+0B111001010101
+</code></pre>
+</li>
+<li>Hexadecimal:<pre><code>0xdeadbeaf
+0XCafeBabe
+</code></pre>
+</li>
+</ul>
+</li>
+<li><p>Maps: (<code>map</code>)</p>
+<pre><code>{1, 2, 3, 4};
+{"Hello", null, 1, true, println};
+{
+    [0] = "Test",
+    ["key"] = 42,
+    name = "Hund",
+    arr = {1, 2, 3}
+};
+{ [0] = "Hello", [1] = "test", [2] = null };
+</code></pre>
+<p>Internally Weel differentiates between 'list' and 'map', lists are
+generally much faster than maps. A list is an ordered map which
+contains only consecutive integer keys starting from <code>0</code>. So only
+the second map in the code example above is a 'real' map, the others
+are lists.</p>
+</li>
+<li><p>Functions: (<code>function</code>)</p>
+<pre><code>a = println
+</code></pre>
+</li>
+<li><p>Objects: (<code>object</code>)</p>
+<p>A special type representing a Java Object. This type can't be
+directly manipulated from Weel code.</p>
+</li>
+</ul>
+<h4 id="names">Names</h4>
+<ul>
+<li>Names are not case sensitive, start with a letter and may contain
+letters, digits and <code>_</code></li>
+</ul>
+<h4 id="operators">Operators</h4>
+<ul>
+<li><code>+</code> : Addition</li>
+<li><code>-</code> : Subtraction</li>
+<li><code>*</code> : Multiplication</li>
+<li><code>/</code> : Division</li>
+<li><code>%</code> : Modulo</li>
+<li><code>..</code> : String concatenation</li>
+<li><code>=</code> : Assign</li>
+<li><code>==</code> : Equal</li>
+<li><code>!=</code> : Not equal</li>
+<li><code>&gt;</code> : Greater than</li>
+<li><code>&gt;=</code> : Greater or equal</li>
+<li><code>&lt;</code> : Less than</li>
+<li><code>&lt;=</code> : Less or equal</li>
+<li><code>!</code> : Logical not</li>
+<li><code>||</code> : Logical or</li>
+<li><code>&amp;&amp;</code> : Logical and</li>
+<li><code>~</code> : Binary not</li>
+<li><code>&amp;</code> : Binary and</li>
+<li><code>|</code> : Binary or</li>
+<li><code>^</code> : Binary xor</li>
+<li><code>.</code> : Dot (named array indices)</li>
+<li><code>:</code> : Colon (declaring OOP functions)</li>
+<li><code>::</code> : Double colon (calling type bound functions)</li>
+<li><code>-&gt;</code> : Arrow (calling OOP functions)</li>
+<li><code>?</code> : Ternary (<code>&lt;cond&gt; ? &lt;expr&gt; : &lt;expr&gt;</code>)</li>
+<li><code>+=, -=, *=, /=, %=, &amp;=, |=, ^=, ..=</code></li>
+</ul>
+<h4 id="reservedwords">Reserved words</h4>
+<pre><code>break,
+case, continue,
+default, do,
+else, elseif, end, exit,
+false, for, foreach, func,
+global,
+if, in,
+local,
+null,
+outer,
+return,
+sub, switch,
+then, this, true,
+until,
+while    
+</code></pre>
+<hr />
+<h3 id="flow">Program flow control</h3>
+<h4 id="ifelse">if, elseif, else, end</h4>
+<pre><code>if &lt;expr&gt; then
+    ...
+[elseif &lt;expr&gt; then]
+    ...
+[else]
+    ...
+end 
+</code></pre>
+<p>An <code>if</code> block may contain zero or more <code>elseif</code>s and zero or one <code>else</code>. The
+<code>else</code> clause must always be the last.</p>
+<h4 id="switch">switch, end</h4>
+<pre><code>switch(&lt;expr&gt;)
+    [case &lt;expr&gt;:]
+        ...
+        [break]
+    [default:]
+        ...
+        [break]
+end
+</code></pre>
+<p>A <code>switch</code> block may contain zero or more <code>case</code> statements and zero or one
+<code>default</code> statements. <code>default</code> must always be the last statement in a <code>switch</code>
+block.</p>
+<h4 id="for">for, end</h4>
+<pre><code>for &lt;var&gt; = &lt;start-expr&gt;, &lt;end-expr&gt;[, &lt;step-expr&gt;] do
+    ...
+    [break]
+    ...
+    [continue]
+end
+</code></pre>
+<p><code>&lt;var&gt;</code> must be a local variable, if you try to use anything else, a new local
+variable with the given name will be created and used.<br />
+The loop goes from <code>&lt;start-expr&gt;</code> to (including) <code>&lt;end-expr&gt;</code> with an optional
+step (<code>&lt;step-expr&gt;</code>).</p>
+<h4 id="foreach">foreach, end</h4>
+<pre><code>foreach [&lt;key-var&gt;,]&lt;value-var&gt; in &lt;map-var&gt; do
+    ...
+    [break]
+    ...
+    [continue]
+end
+</code></pre>
+<p>Iterates over the given map.<br /></p>
+<h4 id="doend">do, end</h4>
+<pre><code>do
+    ...
+    [break]
+    ...
+end
+</code></pre>
+<p>A one-shot loop. Practical as a structured <code>goto</code> replacement and a scope
+for local variables.<br /></p>
+<h4 id="dountil">do, until</h4>
+<pre><code>do
+    ...
+    [break]
+    ...
+    [continue]
+    ...
+until &lt;expr&gt;
+</code></pre>
+<p>Loops until <code>&lt;expr&gt;</code> evaluates to <code>true</code>.<br /></p>
+<h4 id="while">while, end</h4>
+<pre><code>while &lt;expr&gt; do
+    ...
+    [break]
+    ...
+    [continue]
+    ...
+end
+</code></pre>
+<p>Loops while <code>&lt;expr&gt;</code> evaluates to <code>true</code>.<br /></p>
+<hr />
+<h3 id="functions">Functions</h3>
+<p>Weel differentiates between <code>functions</code> <em>(which return a value)</em> and <code>subs</code>
+<em>(which don't return a value)</em>:</p>
+<pre><code>func &lt;name&gt;([&lt;arg-name&gt;[,&lt;arg-name&gt;...]])
+    ...
+    return &lt;expr&gt;
+    ...
+end
+
+sub &lt;name&gt;([&lt;arg-name&gt;[,&lt;arg-name&gt;...]])
+    ...
+    [exit]  // this 'exits' the sub
+    ...
+end
+</code></pre>
+<h4>Anonymous functions</h4>
+<pre><code>&lt;expr&gt; = func([&lt;arg-name&gt;[,&lt;arg-name&gt;...]])
+    ...
+    return &lt;expr&gt;
+    ...
+end
+
+&lt;expr&gt; = sub([&lt;arg-name&gt;[,&lt;arg-name&gt;...]])
+    ...
+    [exit]  // this 'exits' the sub
+    ...
+end
+</code></pre>
+<p>There's also a shorter syntax available:</p>
+<pre><code>&lt;expr&gt; = @{ [(&lt;arg-name&gt;[,&lt;arg-name&gt;...])]
+    ...
+    return &lt;expr&gt;
+    ...
+}
+
+&lt;expr&gt; = @{ [(&lt;arg-name&gt;[,&lt;arg-name&gt;...])]
+    ...
+    [exit]  // this 'exits' the sub
+    ...
+}
+</code></pre>
+<p>As you can see you can leave out the argument declaration if you don't use
+any arguments, and the syntax for functions and subs is identically.</p>
+<h4>Array function examples</h4>
+<pre><code>arr = {}
+
+func arr.f()
+    return true;
+end
+
+arr.g = @{
+    println("Hello world!");
+}
+
+arr2 = {
+    test = 
+    @{
+        println("Another silly test ...");
+    },
+    add = 
+    @{ (a, b)
+        return a + b;
+    }
+}
+
+arr.g();
+println(arr2.add(21, 21));
+</code></pre>
+<h4>OOP function examples</h4>
+<p><em>OOP functions are array functions with some syntactic sugar.</em></p>
+<pre><code>clazz = {
+    var = "Hello Jim!"
+};
+
+sub clazz:print()
+    println(this-&gt;var);
+end
+
+clazz-&gt;print();
+
+// The above could also be written as:
+clazz.print(clazz);
+// or:
+funcFind("clazz$$print", 1)(clazz);
+// or:
+createCaller = 
+    @{(var)
+        return 
+            @{
+                var-&gt;print();
+                // of course you could also use:
+                // var.print(var);
+                // here.
+            };
+    };
+caller = createCaller(clazz);
+caller();
+// *cough*
+</code></pre>
+<h4>A more complex example</h4>
+<p><em>This demonstrates the use of type bound functions.</em></p>
+<pre><code>// Define our functions (anonymous functions inside a map)
+ms = {
+    // size()
+    size = 
+    @{ (m)
+        return size(m);
+    },
+    // fold(f)
+    // a generic list fold function
+    // for maps we need to use a 'foreach' loop which
+    // would make the fold function more complicated
+    fold = 
+    @{ (list, fc)
+        if list == null || size(list) == 0 then
+            return null;
+        elseif size(list) == 1 then
+            return list[0];
+        else
+            ret = fc(list[0], list[1]);
+            for i = 2, size(list) - 1 do
+                ret = fc(ret, list[i]);
+            end
+            return ret;
+        end
+    }
+}
+
+strs = {
+    // length()
+    length =
+    @{ (s)
+        return size(s);
+    } ,
+    // size()
+    size =
+    @{ (s)
+        return size(s);
+    } 
+}
+
+// Register functions for type 'map'
+funcReg("map", ms);
+// Register functions for type 'string'
+funcReg("string", strs);
+
+// Create a map (well, it's a list)
+map = {1, 2, 3, 4};
+
+println(map::size());
+// Outputs: 4
+
+println("Result: "..map::fold(@{(a, b) return a + b}));
+// Outputs: Result: 10
+
+println({1, 2, 3}::fold(@{(a, b) return a..b}));
+// Outputs: 123
+
+println({1, 2, 3}::size());
+// Outputs: 3
+
+println("Hello"::size());
+// Outputs: 5
+</code></pre>
+<p><em>This demonstrates 'patching' a library.</em></p>
+<pre><code>// Say you've go a console library which defines:
+
+console-&gt;charAt(x, y, ch, col);
+
+// And you want to simplify your life because most of the
+// time you use the color `0xff00ff` and don't want to type
+// the color every time you call `charAt`.
+// Well, simply 'inject' your 'curried' function by putting
+// the new function somewhere in your code:
+
+sub concole:charAt(x, y, ch)
+    console-&gt;charAt(x, y, ch, 0xff00ff);
+end
+
+// and you're done
+// A 'dangerous' but very handy possibility to adapt libraries
+// to your needs.
+</code></pre>
+<hr />
+<h3 id="performance">Performance hints</h3>
+<ul>
+<li><p>At the moment static expressions won't result in a static value,
+so <code>a = 1 + 2</code> evaluates to <code>a = 1 + 2</code> and not <code>a = 3</code>.</p>
+</li>
+<li><p>local and closure variables are faster than global variables.</p>
+</li>
+<li><p><code>a = 2 * b</code> is faster than <code>a = b + b</code>.</p>
+</li>
+<li><p><code>a += 1</code> is exactly the same as writing <code>a = a + 1</code>, it just is
+less characters to type.</p>
+</li>
+<li><p>a <code>switch</code> is not faster than doing the same with <code>if</code>, <code>elseif</code>
+and <code>else</code>. It just looks better.</p>
+</li>
+<li><p>A Java implementation of a library function might not always be
+faster than a pure Weel function when called from Weel code.</p>
+</li>
+<li><p>Function calling speed (decreasing from top to bottom):</p>
+<ul>
+<li>Static Weel/Java function calls</li>
+<li>Static Java nice function calls</li>
+<li>Dynamic calls</li>
+<li>Dynamic calls with overload resolving</li>
+<li>Type bound functions</li>
+<li>Dynamic calls to closure functions</li>
+<li>Dynamic calls to closure functions with overload resolving</li>
+</ul>
+<p>This is currently a good guess, I'll benchmark this as soon as the
+rest is stable.</p>
+</li>
+</ul>
+<hr />
+<p>Git repository: <a href="https://github.com/rjeschke/weel">https://github.com/rjeschke/weel</a></p>
+
+</td></tr>
+<tr><td class="tfooter">&copy; Ren&eacute; Jeschke in 2011</td></tr>
+</table>
+</body>
+</html>
