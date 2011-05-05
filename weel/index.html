@@ -13,7 +13,7 @@
 <tr><td class="theader">-- Weel --</td></tr>
 <tr><td class="tcontent" style="width: 100%">
 <h1>Weel - An extensible scripting language</h1>
-<p>Copyright &copy; 2011 René Jeschke <a href="&#x6d;&#97;&#x69;&#x6c;&#116;&#x6f;&#58;&#114;&#101;&#x6e;&#x65;&#x5f;&#x6a;&#101;&#115;&#x63;&#x68;&#107;&#x65;&#64;&#121;&#x61;&#104;&#x6f;&#x6f;&#x2e;&#x64;e">&#114;&#101;&#110;&#101;&#95;&#x6a;&#x65;&#x73;&#99;&#x68;&#x6b;&#x65;&#64;y&#97;&#x68;&#x6f;&#x6f;&#46;&#100;&#x65;</a><br />
+<p>Copyright &copy; 2011 René Jeschke <a href="&#109;&#97;&#105;&#108;&#x74;&#111;&#58;&#114;&#x65;&#x6e;&#x65;&#x5f;&#106;&#101;&#x73;&#99;&#x68;&#x6b;&#x65;&#64;&#x79;&#97;&#104;&#111;&#111;&#x2e;&#x64;&#x65;">&#114;&#x65;&#x6e;&#x65;&#x5f;j&#x65;&#115;&#x63;&#x68;&#107;&#x65;&#64;&#121;&#x61;&#x68;&#x6f;&#111;&#46;&#100;&#x65;</a><br />
 See LICENSE.txt for licensing information.</p>
 <hr />
 <ul>
@@ -133,7 +133,7 @@ line break"
 <p>Internally Weel differentiates between 'list' and 'map', lists are
 generally much faster than maps. A list is an ordered map which
 contains only consecutive integer keys starting from <code>0</code>. So only
-the second map in the code example above is a 'real' map, the others
+the third map in the code example above is a 'real' map, the others
 are lists.</p>
 </li>
 <li><p>Functions: (<code>function</code>)</p>
@@ -143,6 +143,19 @@ are lists.</p>
 <li><p>Objects: (<code>object</code>)</p>
 <p>A special type representing a Java Object. This type can't be
 directly manipulated from Weel code.</p>
+</li>
+<li><p>Booleans:</p>
+<p>Weel does not have a real boolean type. <code>true</code> evaluates to <code>-1</code> and
+<code>false</code> evaluates to <code>0</code>. See below to see how different types and
+values map to <code>true</code> and <code>false</code>:</p>
+<ul>
+<li>Null: is always <code>false</code></li>
+<li>Numbers: <code>0.0</code> is <code>false</code>, everything else is <code>true</code></li>
+<li>Strings: &ldquo;&rdquo; is <code>false</code>, everything else is <code>true</code></li>
+<li>Map: A map with a size of <code>0</code> is <code>false</code>, everything else is <code>true</code></li>
+<li>Function: is always <code>true</code></li>
+<li>Object: a Java <code>null</code> value is <code>false</code>, everything else is <code>true</code></li>
+</ul>
 </li>
 </ul>
 <h4 id="names">Names</h4>
@@ -228,6 +241,7 @@ block.</p>
     [break]
     ...
     [continue]
+    ...
 end
 </code></pre>
 <p><code>&lt;var&gt;</code> must be a local variable, if you try to use anything else, a new local
@@ -240,6 +254,7 @@ step (<code>&lt;step-expr&gt;</code>).</p>
     [break]
     ...
     [continue]
+    ...
 end
 </code></pre>
 <p>Iterates over the given map.<br /></p>
@@ -276,6 +291,7 @@ end
 <h3 id="functions">Functions</h3>
 <p>Weel differentiates between <code>functions</code> <em>(which return a value)</em> and <code>subs</code>
 <em>(which don't return a value)</em>:</p>
+<h4>Static global functions</h4>
 <pre><code>func &lt;name&gt;([&lt;arg-name&gt;[,&lt;arg-name&gt;...]])
     ...
     return &lt;expr&gt;
@@ -288,6 +304,10 @@ sub &lt;name&gt;([&lt;arg-name&gt;[,&lt;arg-name&gt;...]])
     ...
 end
 </code></pre>
+<p>Weel supports function overloading for static, array and OOP functions.
+The correct function is determined by name and number of arguments. So it
+is possible to have an overloaded function taking a differing number of
+arguments that returns a value, even if all others don't.</p>
 <h4>Anonymous functions</h4>
 <pre><code>&lt;expr&gt; = func([&lt;arg-name&gt;[,&lt;arg-name&gt;...]])
     ...
