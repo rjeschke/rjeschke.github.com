@@ -13,7 +13,7 @@
 <tr><td class="theader">-- Weel --</td></tr>
 <tr><td class="tcontent" style="width: 100%">
 <h1>Weel - An extensible scripting language</h1>
-<p>Copyright &copy; 2011 René Jeschke <a href="&#109;&#97;&#105;&#108;&#x74;&#111;&#58;&#114;&#x65;&#x6e;&#x65;&#x5f;&#106;&#101;&#x73;&#99;&#x68;&#x6b;&#x65;&#64;&#x79;&#97;&#104;&#111;&#111;&#x2e;&#x64;&#x65;">&#114;&#x65;&#x6e;&#x65;&#x5f;j&#x65;&#115;&#x63;&#x68;&#107;&#x65;&#64;&#121;&#x61;&#x68;&#x6f;&#111;&#46;&#100;&#x65;</a><br />
+<p>Copyright &copy; 2011 René Jeschke <a href="&#109;a&#105;&#108;&#116;o&#x3a;&#x72;&#101;&#110;&#101;&#95;&#106;e&#115;&#x63;&#104;&#107;&#101;&#64;&#121;&#97;&#x68;&#111;&#x6f;&#x2e;&#100;&#101;">&#x72;&#x65;&#x6e;&#101;&#95;&#106;&#101;&#x73;&#99;&#x68;&#x6b;&#x65;&#64;&#x79;&#97;&#x68;&#x6f;&#x6f;&#46;&#x64;&#101;</a><br />
 See LICENSE.txt for licensing information.</p>
 <hr />
 <ul>
@@ -37,6 +37,15 @@ See LICENSE.txt for licensing information.</p>
 </ul>
 </li>
 <li><a href="#functions">Functions</a></li>
+<li><a href="#technical">Technical details</a><ul>
+<li><a href="#perft">Performance</a></li>
+<li><a href="#stacks">Weel stacks</a></li>
+<li><a href="#funccall">Function calling</a></li>
+<li><a href="#anonfuncst">Anonymous functions</a></li>
+<li><a href="#intnames">Internal function naming</a></li>
+<li><a href="#compilation">Compilation</a></li>
+</ul>
+</li>
 <li><a href="#performance">Performance hints</a></li>
 </ul>
 <hr />
@@ -154,7 +163,7 @@ values map to <code>true</code> and <code>false</code>:</p>
 <li>Strings: &ldquo;&rdquo; is <code>false</code>, everything else is <code>true</code></li>
 <li>Map: A map with a size of <code>0</code> is <code>false</code>, everything else is <code>true</code></li>
 <li>Function: is always <code>true</code></li>
-<li>Object: a Java <code>null</code> value is <code>false</code>, everything else is <code>true</code></li>
+<li>Object: a Java&trade; <code>null</code> value is <code>false</code>, everything else is <code>true</code></li>
 </ul>
 </li>
 </ul>
@@ -171,6 +180,7 @@ letters, digits and <code>_</code></li>
 <li><code>/</code> : Division</li>
 <li><code>%</code> : Modulo</li>
 <li><code>..</code> : String concatenation</li>
+<li><code>++</code> : Map concatenation</li>
 <li><code>=</code> : Assign</li>
 <li><code>==</code> : Equal</li>
 <li><code>!=</code> : Not equal</li>
@@ -477,33 +487,148 @@ end
 // to your needs.
 </code></pre>
 <hr />
+<h3 id="technical">Technical details</h3>
+<h4 id="perft">Performance</h4>
+<p>The reason why I rewrote Yjasl4 was <strong>speed</strong>. After some days of thinking
+about the new Weel VM I decided to give direct JVM bytecode generation a try.
+The first test, compiling Weel source code by 'hand' as calls to the runtime
+in a Java&trade; method showed the potential this approach offered. The speed
+increase compared to Yjasl4 is about a factor of 5 to 10, depending on the
+code used.</p>
+<p>Another benefit of the new compilation method is that I have more freedom to
+develop new language features. In Yjasl4 adding a new bytecode could result in
+large decrease in performance, so I had to choose wisely which bytecode I <em>really</em>
+needed.</p>
+<p>In Weel, I can add as many 'bytecodes' as I want, without sacrificing speed (which
+already resulted in lots of new features and possibilities).</p>
+<p>The main design goals for Weel were/are:</p>
+<ul>
+<li>Lots of small runtime methods</li>
+<li>Minimized number constants storage in class files (not everything gets
+really stored as a <code>double</code>)</li>
+<li>Avoid object creations wherever possible</li>
+<li>Having an API for Java&trade; Weel libraries which also makes it possible
+to retrieve the needed value in raw methods without object creations</li>
+<li>Multithreading support</li>
+</ul>
+<p>If you have a look at the runtime class, you won't see many <code>new</code> operators.
+Values on the stack get 'copied', not cloned, except for the case when the user
+really needs a <code>Value</code>, then I have to clone it. This gives a large speed benefit
+but hinders the garbage collector to do its job (because references don't get
+removed when changing the type of a value). You can always use <code>Runtime.wipeStack()</code>
+to clean unsused references and maybe I'll sacrifice some performance to clean
+values when they get 'popped', to minimize the memory footprint.</p>
+<h4 id="stacks">Weel stacks</h4>
+<ol>
+<li><p>The <code>Value</code> stack:</p>
+<p>The Value stack is used for all Weel operations. The Runtime avoids costly
+Object creations by copying the values inside the stack and only cloning
+values if they need to leave the safe space inside the Runtime (e.g. when
+calling <code>Runtime.pop()</code>). The Runtime offers also various methods for
+library programmers to avoid value cloning by querying a direct value (e.g.
+<code>double Runtime.popNumber()</code> or <code>String Runtime.popString()</code>.</p>
+</li>
+<li><p>The <em>'Frame'</em> stack:</p>
+<p>This is used for function frames to prepare function arguments and reserve
+space for local variables. In fact it only holds the position of the first
+argument or local variable and a frame size.</p>
+</li>
+<li><p>The <em>'Virtual Function'</em> stack:</p>
+<p>This one is used by anonymous functions containing closure variables and
+holds a reference to the currently executed function and its closure
+variables.</p>
+</li>
+</ol>
+<h4 id="funccall">Function calling</h4>
+<p>There are four different types of function calls:</p>
+<ol>
+<li><p>Static calls:</p>
+<p>Every call to a static Weel function or a Java function is a static call
+which gets directly compiled into bytecode.</p>
+</li>
+<li><p>Dynamic calls (aka stack call):</p>
+<p>The function to call resides on the stack and has to be called using an
+<em>invoker</em> which at the moment uses Reflection to perform its task. As a
+dynamic call has every information about the call that it need (name,
+number of arguments, and returns-value flag) it can resolve overloaded
+functions and prepares the stack to match the situation (e.g. if a
+function returns a value and the context doesn't need one the return
+value gets discarded).</p>
+<p>A stack call only tries to resolve an overloaded function if the expected
+argument count does not match the amount defined by the function on the
+stack.</p>
+</li>
+<li><p>Anonymous closure function calls:</p>
+<p>These work exactly like stack calls (because they are stack calls) but a
+different invoker method is used which registes the function on the
+virtual function stack.</p>
+</li>
+<li><p>Type bound functions:</p>
+<p>This is a special type of a stack call, which is always dynamic. The
+runtime examines the stack to determine the type to call the function on.
+Then it resolves the correct function to call by looking it up using the
+type, the name (which is supplied as a String on the JVM stack) and the
+number of arguments.</p>
+</li>
+</ol>
+<h4 id="anonfuncst">Anonymous functions</h4>
+<p>Anonymous functions are nameless static functions which don't get registered
+in the Weel (that's why you can't uses overloading on anonymous functions).</p>
+<p>Declaring an anonymous function without closure variables only results in a
+Runtime.load(&hellip;) operation, loading the anonymous function (which is already
+compiled) by its function index.</p>
+<p>This behavious changes when closure variables are needed. Here every expression
+which creates such a function also creates a new object with a snapshot of its
+used outer variables.</p>
+<h4 id="intnames">Internal function naming</h4>
+<p>To differentiate between different kinds of functions, three types of function
+names are used:</p>
+<ol>
+<li>Static functions are named as you specified it, so <code>func test(a, b)</code> will
+be named <code>test</code>.</li>
+<li>Array functions use the name of the array and the function's name
+concatenated by <code>$</code>, so <code>func arr.test(a, b)</code> will be named <code>arr$test</code>.</li>
+<li>OOP functions use the name of the array and the function's name
+concatenated by <code>$$</code>, so <code>func arr:test(a, b)</code> will be named <code>arr$$test</code>.</li>
+</ol>
+<p>Anonymous functions all use the same static name <code>ANON</code>.</p>
+<h4 id="compilation">Compilation</h4>
+<p>The Weel compiler does not do any Voodoo, it mostly chains calls to runtime
+methods, generates method calls and some IFEQs, IFNEs and GOTOs. It seems
+that weel performes so well because of the JIT compiler loving small methods.</p>
+<p>So it's all a little bit cheating &hellip; but it works &hellip; and it's fast.</p>
+<hr />
 <h3 id="performance">Performance hints</h3>
 <ul>
-<li><p>At the moment static expressions won't result in a static value,
-so <code>a = 1 + 2</code> evaluates to <code>a = 1 + 2</code> and not <code>a = 3</code>.</p>
+<li><p>At the moment static expressions won't result in a static value, so
+<code>a = 1 + 2</code> evaluates to <code>a = 1 + 2</code> and not <code>a = 3</code>.</p>
 </li>
 <li><p>local and closure variables are faster than global variables.</p>
 </li>
 <li><p><code>a = 2 * b</code> is faster than <code>a = b + b</code>.</p>
 </li>
-<li><p><code>a += 1</code> is exactly the same as writing <code>a = a + 1</code>, it just is
-less characters to type.</p>
+<li><p><code>a += 1</code> is exactly the same as writing <code>a = a + 1</code>, it just is less
+characters to type.</p>
 </li>
-<li><p>a <code>switch</code> is not faster than doing the same with <code>if</code>, <code>elseif</code>
-and <code>else</code>. It just looks better.</p>
+<li><p>a <code>switch</code> is not faster than doing the same with <code>if</code>, <code>elseif</code> and <code>else</code>,
+it just looks better.</p>
 </li>
-<li><p>A Java implementation of a library function might not always be
-faster than a pure Weel function when called from Weel code.</p>
+<li><p>A Java implementation of a library function might not always be faster than
+a pure Weel function when called from Weel code.</p>
+</li>
+<li><p>If you use overloading with array or OOP functions try to define the
+overloaded type you will probably use the most after all other overloading
+variations. This will save you some costly runtime overload resolving
+operations.</p>
 </li>
 <li><p>Function calling speed (decreasing from top to bottom):</p>
 <ul>
 <li>Static Weel/Java function calls</li>
 <li>Static Java nice function calls</li>
 <li>Dynamic calls</li>
-<li>Dynamic calls with overload resolving</li>
 <li>Type bound functions</li>
+<li>Dynamic calls with overload resolving</li>
 <li>Dynamic calls to closure functions</li>
-<li>Dynamic calls to closure functions with overload resolving</li>
 </ul>
 <p>This is currently a good guess, I'll benchmark this as soon as the
 rest is stable.</p>
