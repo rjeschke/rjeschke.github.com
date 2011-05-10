@@ -13,7 +13,7 @@
 <tr><td class="theader">-- Weel --</td></tr>
 <tr><td class="tcontent" style="width: 100%">
 <h1>Weel - An extensible scripting language</h1>
-<p>Copyright &copy; 2011 René Jeschke <a href="&#109;a&#105;&#108;&#116;o&#x3a;&#x72;&#101;&#110;&#101;&#95;&#106;e&#115;&#x63;&#104;&#107;&#101;&#64;&#121;&#97;&#x68;&#111;&#x6f;&#x2e;&#100;&#101;">&#x72;&#x65;&#x6e;&#101;&#95;&#106;&#101;&#x73;&#99;&#x68;&#x6b;&#x65;&#64;&#x79;&#97;&#x68;&#x6f;&#x6f;&#46;&#x64;&#101;</a><br />
+<p>Copyright &copy; 2011 René Jeschke <a href="&#x6d;&#x61;&#105;&#108;&#x74;&#x6f;&#58;&#114;&#x65;&#x6e;e&#95;&#x6a;&#x65;&#x73;&#99;&#104;&#107;&#101;&#64;&#121;&#x61;&#104;&#x6f;&#111;&#46;&#100;&#101;">r&#101;&#x6e;&#101;&#x5f;&#x6a;&#101;&#x73;&#x63;&#x68;&#107;&#101;&#x40;&#121;a&#104;&#111;&#x6f;&#46;&#100;&#x65;</a><br />
 See LICENSE.txt for licensing information.</p>
 <hr />
 <ul>
@@ -26,6 +26,7 @@ See LICENSE.txt for licensing information.</p>
 <li><a href="#operators">Operators</a></li>
 </ul>
 </li>
+<li><a href="#storage">Storage and lifetime</a></li>
 <li><a href="#flow">Program flow control</a><ul>
 <li><a href="#ifelse">if, elseif, else, end</a></li>
 <li><a href="#switch">switch, end</a></li>
@@ -148,9 +149,41 @@ are lists.</p>
 <li><p>Functions: (<code>function</code>)</p>
 <pre><code>a = println
 </code></pre>
+<p>As functions may be assigned to e.g. variables, the following code
+fragment <em>really</em> works:</p>
+<pre><code>// Don't try this at home^^
+
+f = 
+@{ (a)
+  return
+   {
+    [5] = 
+    @{ (b)
+      local z = {};
+      z[b] = 
+      @{
+        return 
+         {
+          [2] = 
+           {
+            fin = 
+            @{ (v)
+              return v * 2;
+             }
+           }
+         };
+       };
+      return z;
+     }
+   };
+ };
+
+println(f(10)[5]("hund").hund()[2].fin(21));
+// Outputs: 42
+</code></pre>
 </li>
 <li><p>Objects: (<code>object</code>)</p>
-<p>A special type representing a Java Object. This type can't be
+<p>A special type representing a Java&trade; Object. This type can't be
 directly manipulated from Weel code.</p>
 </li>
 <li><p>Booleans:</p>
@@ -170,7 +203,7 @@ values map to <code>true</code> and <code>false</code>:</p>
 <h4 id="names">Names</h4>
 <ul>
 <li>Names are not case sensitive, start with a letter and may contain
-letters, digits and <code>_</code></li>
+letters, digits and <code>_</code> (underscore)</li>
 </ul>
 <h4 id="operators">Operators</h4>
 <ul>
@@ -219,6 +252,68 @@ then, this, true,
 until,
 while    
 </code></pre>
+<hr />
+<h3 id="storage">Storage and lifetime</h3>
+<p>By default all variables are local and every static function is global. If you
+want to override the default storage for variables use one of the following
+keywords:</p>
+<ul>
+<li><p><code>local &lt;name&gt;[ = expr[,&lt;name&gt;...]]</code></p>
+<p>The 'local' keyword forces a variable to local:</p>
+<pre><code>local i;
+i = 1;
+do
+    local i = 2;
+    i += 1;
+    println(i);
+    // Outputs: 3
+end
+
+println(i);
+// Outputs: 1
+</code></pre>
+</li>
+<li><p><code>global &lt;name&gt;[ = expr[,&lt;name&gt;...]]</code></p>
+<p>The 'global' keyword registers a global variable inside the Weel. This
+variable is accessible from every script compiled into this Weel instance.</p>
+<pre><code>sub init()
+    global my = "global";
+end
+
+println(my);
+// Outputs: null
+init();
+println(my);
+// Outputs: global
+</code></pre>
+</li>
+<li><p><code>outer &lt;name&gt; = expr[,&lt;name&gt; = expr, ...]</code></p>
+<p>The keyword 'outer' declares an initialized closure variable inside
+an anonymous function:</p>
+<pre><code>f = 
+    @{
+        outer counter = -1;
+        return counter += 1;
+     };
+
+println(f());
+// Outputs: 0
+println(f());
+// Outputs: 1
+</code></pre>
+<p>The following code demonstrates the way 'outer' works by showing how
+to achieve the above function definition without using 'outer':</p>
+<pre><code>f = null;
+do
+    local counter = -1;
+    f = 
+        @{
+            return counter += 1;
+         };
+end
+</code></pre>
+</li>
+</ul>
 <hr />
 <h3 id="flow">Program flow control</h3>
 <h4 id="ifelse">if, elseif, else, end</h4>
@@ -353,19 +448,20 @@ func arr.f()
     return true;
 end
 
-arr.g = @{
-    println("Hello world!");
-}
+arr.g = 
+    @{
+        println("Hello world!");
+     }
 
 arr2 = {
     test = 
-    @{
-        println("Another silly test ...");
-    },
+        @{
+            println("Another silly test ...");
+         },
     add = 
-    @{ (a, b)
-        return a + b;
-    }
+        @{ (a, b)
+            return a + b;
+         }
 }
 
 arr.g();
@@ -396,8 +492,8 @@ createCaller =
                 // of course you could also use:
                 // var.print(var);
                 // here.
-            };
-    };
+             };
+     };
 caller = createCaller(clazz);
 caller();
 // *cough*
@@ -408,40 +504,40 @@ caller();
 ms = {
     // size()
     size = 
-    @{ (m)
-        return size(m);
-    },
+        @{ (m)
+            return size(m);
+         },
     // fold(f)
     // a generic list fold function
     // for maps we need to use a 'foreach' loop which
     // would make the fold function more complicated
     fold = 
-    @{ (list, fc)
-        if list == null || size(list) == 0 then
-            return null;
-        elseif size(list) == 1 then
-            return list[0];
-        else
-            ret = fc(list[0], list[1]);
-            for i = 2, size(list) - 1 do
-                ret = fc(ret, list[i]);
+        @{ (list, fc)
+            if list == null || size(list) == 0 then
+                return null;
+            elseif size(list) == 1 then
+                return list[0];
+            else
+                ret = fc(list[0], list[1]);
+                for i = 2, size(list) - 1 do
+                    ret = fc(ret, list[i]);
+                end
+                return ret;
             end
-            return ret;
-        end
-    }
+         }
 }
 
 strs = {
     // length()
     length =
-    @{ (s)
-        return size(s);
-    } ,
+        @{ (s)
+            return size(s);
+         },
     // size()
     size =
-    @{ (s)
-        return size(s);
-    } 
+        @{ (s)
+            return size(s);
+         } 
 }
 
 // Register functions for type 'map'
@@ -485,6 +581,8 @@ end
 // and you're done
 // A 'dangerous' but very handy possibility to adapt libraries
 // to your needs.
+// Well, it's not that dangerous, because you can not override
+// any function, i.e. you can't 
 </code></pre>
 <hr />
 <h3 id="technical">Technical details</h3>
@@ -493,7 +591,7 @@ end
 about the new Weel VM I decided to give direct JVM bytecode generation a try.
 The first test, compiling Weel source code by 'hand' as calls to the runtime
 in a Java&trade; method showed the potential this approach offered. The speed
-increase compared to Yjasl4 is about a factor of 5 to 10, depending on the
+increase compared to Yjasl4 is about a factor of 3 to 6, depending on the
 code used.</p>
 <p>Another benefit of the new compilation method is that I have more freedom to
 develop new language features. In Yjasl4 adding a new bytecode could result in
@@ -513,11 +611,7 @@ to retrieve the needed value in raw methods without object creations</li>
 </ul>
 <p>If you have a look at the runtime class, you won't see many <code>new</code> operators.
 Values on the stack get 'copied', not cloned, except for the case when the user
-really needs a <code>Value</code>, then I have to clone it. This gives a large speed benefit
-but hinders the garbage collector to do its job (because references don't get
-removed when changing the type of a value). You can always use <code>Runtime.wipeStack()</code>
-to clean unsused references and maybe I'll sacrifice some performance to clean
-values when they get 'popped', to minimize the memory footprint.</p>
+really needs a <code>Value</code>, then I have to clone it.</p>
 <h4 id="stacks">Weel stacks</h4>
 <ol>
 <li><p>The <code>Value</code> stack:</p>
@@ -543,7 +637,7 @@ variables.</p>
 <p>There are four different types of function calls:</p>
 <ol>
 <li><p>Static calls:</p>
-<p>Every call to a static Weel function or a Java function is a static call
+<p>Every call to a static Weel function or a Java&trade; function is a static call
 which gets directly compiled into bytecode.</p>
 </li>
 <li><p>Dynamic calls (aka stack call):</p>
@@ -607,14 +701,11 @@ that weel performes so well because of the JIT compiler loving small methods.</p
 </li>
 <li><p><code>a = 2 * b</code> is faster than <code>a = b + b</code>.</p>
 </li>
-<li><p><code>a += 1</code> is exactly the same as writing <code>a = a + 1</code>, it just is less
+<li><p><code>a += 1</code> is exactly the same as writing <code>a = a + 1</code> &mdash; it just is less
 characters to type.</p>
 </li>
-<li><p>a <code>switch</code> is not faster than doing the same with <code>if</code>, <code>elseif</code> and <code>else</code>,
-it just looks better.</p>
-</li>
-<li><p>A Java implementation of a library function might not always be faster than
-a pure Weel function when called from Weel code.</p>
+<li><p>a <code>switch</code> is not faster than doing the same with <code>if</code>, <code>elseif</code> and <code>else</code>
+&mdash; it just looks better.</p>
 </li>
 <li><p>If you use overloading with array or OOP functions try to define the
 overloaded type you will probably use the most after all other overloading
@@ -623,8 +714,8 @@ operations.</p>
 </li>
 <li><p>Function calling speed (decreasing from top to bottom):</p>
 <ul>
-<li>Static Weel/Java function calls</li>
-<li>Static Java nice function calls</li>
+<li>Static Weel/Java&trade; function calls</li>
+<li>Static Java&trade; nice function calls</li>
 <li>Dynamic calls</li>
 <li>Type bound functions</li>
 <li>Dynamic calls with overload resolving</li>
