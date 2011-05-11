@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -158,20 +158,20 @@ are lists.</p>
 fragment <em>really</em> works:</p>
 <pre><code>// Don't try this at home^^
 
-f = 
+f =
 @{ (a)
   return
    {
-    [5] = 
+    [5] =
     @{ (b)
       local z = {};
-      z[b] = 
+      z[b] =
       @{
-        return 
+        return
          {
-          [2] = 
+          [2] =
            {
-            fin = 
+            fin =
             @{ (v)
               return v * 2;
              }
@@ -255,7 +255,7 @@ return,
 sub, switch,
 then, this, true,
 until,
-while    
+while
 </code></pre>
 <hr />
 <h3 id="storage">Storage and lifetime</h3>
@@ -295,7 +295,7 @@ println(my);
 <li><p><code>outer &lt;name&gt; = expr[,&lt;name&gt; = expr, ...]</code></p>
 <p>The keyword 'outer' declares an initialized closure variable inside
 an anonymous function:</p>
-<pre><code>f = 
+<pre><code>f =
     @{
         outer counter = -1;
         return counter += 1;
@@ -311,7 +311,7 @@ to achieve the above function definition without using 'outer':</p>
 <pre><code>f = null;
 do
     local counter = -1;
-    f = 
+    f =
         @{
             return counter += 1;
          };
@@ -328,7 +328,7 @@ end
     ...
 [else]
     ...
-end 
+end
 </code></pre>
 <p>An <code>if</code> block may contain zero or more <code>elseif</code>s and zero or one <code>else</code>. The
 <code>else</code> clause must always be the last.</p>
@@ -453,17 +453,17 @@ func arr.f()
     return true;
 end
 
-arr.g = 
+arr.g =
     @{
         println("Hello world!");
      }
 
 arr2 = {
-    test = 
+    test =
         @{
             println("Another silly test ...");
          },
-    add = 
+    add =
         @{ (a, b)
             return a + b;
          }
@@ -489,9 +489,9 @@ clazz.print(clazz);
 // or:
 funcFind("clazz$$print", 1)(clazz);
 // or:
-createCaller = 
+createCaller =
     @{(var)
-        return 
+        return
             @{
                 var-&gt;print();
                 // of course you could also use:
@@ -508,7 +508,7 @@ caller();
 <pre><code>// Define our functions (anonymous functions inside a map)
 ms = {
     // size()
-    size = 
+    size =
         @{ (m)
             return size(m);
          },
@@ -516,7 +516,7 @@ ms = {
     // a generic list fold function
     // for maps we need to use a 'foreach' loop which
     // would make the fold function more complicated
-    fold = 
+    fold =
         @{ (list, fc)
             if list == null || size(list) == 0 then
                 return null;
@@ -542,7 +542,7 @@ strs = {
     size =
         @{ (s)
             return size(s);
-         } 
+         }
 }
 
 // Register functions for type 'map'
@@ -587,7 +587,7 @@ end
 // A 'dangerous' but very handy possibility to adapt libraries
 // to your needs.
 // Well, it's not that dangerous, because you can not override
-// any function, i.e. you can't 
+// any function, i.e. you can't
 </code></pre>
 <hr />
 <h3 id="extending">Extending Weel</h3>
@@ -615,7 +615,7 @@ public final static void strIndex3(final Runtime runtime)
 <p>If you don't specify <code>name</code>, the name of the method will be used,
 <code>args</code> defaults to <code>0</code> and <code>returnsValue</code> defaults to <code>false</code>.</p>
 <p>As you can see, you have to 'pop' the arguments from the Weel stack (in
-reverse order). When you use the 'pop<Type>' runtime functions Weel
+reverse order). When you use the 'pop&lt;Type&gt;' runtime functions Weel
 will throw an Exception if the value is not of the requested type.</p>
 <p>The <code>load</code> methods are used to push a return value onto the Weel stack.</p>
 <p>Make sure you don't mess around with the stack: Only pop as many arguments
