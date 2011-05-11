@@ -13,7 +13,7 @@
 <tr><td class="theader">-- Weel --</td></tr>
 <tr><td class="tcontent" style="width: 100%">
 <h1>Weel - An extensible scripting language</h1>
-<p>Copyright &copy; 2011 René Jeschke <a href="&#x6d;&#x61;&#105;&#108;&#x74;&#x6f;&#58;&#114;&#x65;&#x6e;e&#95;&#x6a;&#x65;&#x73;&#99;&#104;&#107;&#101;&#64;&#121;&#x61;&#104;&#x6f;&#111;&#46;&#100;&#101;">r&#101;&#x6e;&#101;&#x5f;&#x6a;&#101;&#x73;&#x63;&#x68;&#107;&#101;&#x40;&#121;a&#104;&#111;&#x6f;&#46;&#100;&#x65;</a><br />
+<p>Copyright &copy; 2011 René Jeschke <a href="m&#97;&#x69;&#108;&#116;&#x6f;&#x3a;&#114;&#x65;&#x6e;&#101;_&#106;&#101;&#x73;&#x63;&#x68;&#107;&#101;&#64;&#x79;&#x61;&#104;&#111;&#x6f;&#46;&#100;&#x65;">&#x72;&#x65;&#x6e;&#101;&#x5f;&#x6a;&#101;&#x73;&#x63;&#x68;&#x6b;&#x65;&#64;&#x79;&#x61;&#x68;&#x6f;&#x6f;&#x2e;&#100;&#x65;</a><br  />
 See LICENSE.txt for licensing information.</p>
 <hr />
 <ul>
@@ -38,6 +38,11 @@ See LICENSE.txt for licensing information.</p>
 </ul>
 </li>
 <li><a href="#functions">Functions</a></li>
+<li><a href="#extending">Extending Weel</a><ul>
+<li><a href="#extstatic">Static functions</a></li>
+<li><a href="#arroop">Array and OOP functions</a></li>
+</ul>
+</li>
 <li><a href="#technical">Technical details</a><ul>
 <li><a href="#perft">Performance</a></li>
 <li><a href="#stacks">Weel stacks</a></li>
@@ -350,7 +355,7 @@ block.</p>
 end
 </code></pre>
 <p><code>&lt;var&gt;</code> must be a local variable, if you try to use anything else, a new local
-variable with the given name will be created and used.<br />
+variable with the given name will be created and used.<br  />
 The loop goes from <code>&lt;start-expr&gt;</code> to (including) <code>&lt;end-expr&gt;</code> with an optional
 step (<code>&lt;step-expr&gt;</code>).</p>
 <h4 id="foreach">foreach, end</h4>
@@ -362,7 +367,7 @@ step (<code>&lt;step-expr&gt;</code>).</p>
     ...
 end
 </code></pre>
-<p>Iterates over the given map.<br /></p>
+<p>Iterates over the given map.<br  /></p>
 <h4 id="doend">do, end</h4>
 <pre><code>do
     ...
@@ -371,7 +376,7 @@ end
 end
 </code></pre>
 <p>A one-shot loop. Practical as a structured <code>goto</code> replacement and a scope
-for local variables.<br /></p>
+for local variables.<br  /></p>
 <h4 id="dountil">do, until</h4>
 <pre><code>do
     ...
@@ -381,7 +386,7 @@ for local variables.<br /></p>
     ...
 until &lt;expr&gt;
 </code></pre>
-<p>Loops until <code>&lt;expr&gt;</code> evaluates to <code>true</code>.<br /></p>
+<p>Loops until <code>&lt;expr&gt;</code> evaluates to <code>true</code>.<br  /></p>
 <h4 id="while">while, end</h4>
 <pre><code>while &lt;expr&gt; do
     ...
@@ -391,7 +396,7 @@ until &lt;expr&gt;
     ...
 end
 </code></pre>
-<p>Loops while <code>&lt;expr&gt;</code> evaluates to <code>true</code>.<br /></p>
+<p>Loops while <code>&lt;expr&gt;</code> evaluates to <code>true</code>.<br  /></p>
 <hr />
 <h3 id="functions">Functions</h3>
 <p>Weel differentiates between <code>functions</code> <em>(which return a value)</em> and <code>subs</code>
@@ -585,6 +590,152 @@ end
 // any function, i.e. you can't 
 </code></pre>
 <hr />
+<h3 id="extending">Extending Weel</h3>
+<h4 id="extstatic">Static functions</h4>
+<p>Weel uses a simple mechanism to import Java&trade; methods for usage from Weel
+code:</p>
+<pre><code>public void Weel.importFunctions(Class&lt;?&gt; clazz)
+</code></pre>
+<p>Weel only supports <code>static</code> methods, so you just have to supply the class
+you want to import.</p>
+<p>You can use two different ways to write a function for Weel:</p>
+<ol>
+<li><p>Using the <code>WeelRawMethod</code> annotation:</p>
+<p>Example:</p>
+<pre><code>// strindex(a, b, i)
+@WeelRawMethod(name = "strindex", args = 3, returnsValue = true)
+public final static void strIndex3(final Runtime runtime)
+{
+    final int i = (int) runtime.popNumber();
+    final String b = runtime.popString();
+    final String a = runtime.popString();
+    runtime.load(a.indexOf(b, i));
+}
+</code></pre>
+<p>If you don't specify <code>name</code>, the name of the method will be used,
+<code>args</code> defaults to <code>0</code> and <code>returnsValue</code> defaults to <code>false</code>.</p>
+<p>As you can see, you have to 'pop' the arguments from the Weel stack (in
+reverse order). When you use the 'pop<Type>' runtime functions Weel
+will throw an Exception if the value is not of the requested type.</p>
+<p>The <code>load</code> methods are used to push a return value onto the Weel stack.</p>
+<p>Make sure you don't mess around with the stack: Only pop as many arguments
+as you need, and don't push a return value if non is needed/declared.</p>
+</li>
+<li><p>Using the <code>WeelMethod</code> annotation ('nice' methods):</p>
+<p>Example using WeelRawMethod:</p>
+<pre><code>// pow(a, b)
+@WeelRawMethod(name = "pow", args = 2, returnsValue = true)
+public final static double pow(final Runtime runtime)
+{
+    final double b = runtime.popNumber();
+    final double a = runtime.popNumber();
+    runtime.load(Math.pow(a, b));
+}
+</code></pre>
+<p>The same using WeelMethod:</p>
+<pre><code>// pow(a, b)
+@WeelMethod(name = "pow")
+public final static double pow(double a, double b)
+{
+    return Math.pow(a, b);
+}
+</code></pre>
+<p>If you don't specify <code>name</code>, the name of the method will be used.</p>
+<p>As you can see, this is much simpler than doing it using the 'raw'
+approach. Weel takes care of your values, does type checks and
+casts things around.</p>
+<p>Auto-mapped types:</p>
+<pre><code>Java(TM)        &lt;=&gt; Weel
+----------------------------------
+double          &lt;=&gt; NUMBER
+int             &lt;=&gt; NUMBER (casted to/from double)
+String          &lt;=&gt; STRING/NULL
+Value           &lt;=&gt; Value
+ValueMap        &lt;=&gt; MAP/NULL
+WeelFunction    &lt;=&gt; FUNCTION/NULL
+</code></pre>
+<p>All other types are treated as OBJECT and casted to the desired type.</p>
+<p>If you need access to the runtime in a 'nice' method, just specify
+a parameter of type <code>Runtime</code>. This parameter will receive the current
+runtime instance and won't appear as an argument in the Weel function:</p>
+<pre><code>// funcFind(name, args)
+@WeelMethod
+public final static WeelFunction funcFind(Runtime rt, String name, int args)
+{
+    return rt.getMother().findFunction(name, args);
+}
+</code></pre>
+<p>The <code>load</code> methods in the runtime will automatically load <code>NULL</code> if you
+try to load a String, Value, ValueMap or WeelFunction which is <code>null</code>.</p>
+<p><strong>Technical information:</strong> When registering 'nice' methods, a wrapper
+Java&trade; method is created, which takes care of parameter mappings, so this
+is not resolved dynamically during runtime. Calling 'nice' methods is about
+10% slower than calling 'raw' methods.</p>
+</li>
+</ol>
+<h4 id="arroop">Array and OOP functions</h4>
+<p>To create array and OOP functions you only have to tag the enclosing Java&trade;
+class with <code>WeelClass</code>:</p>
+<pre><code>@WeelClass(name = "myclazz", usesOop = true, isPrivate = false)
+public class MyClass
+{
+    ...
+}
+</code></pre>
+<p>If you don't specify <code>name</code>, the simple name of the class will be used,
+<code>usesOop</code> and <code>isPrivate</code> both default to <code>false</code>.</p>
+<p>Members are declared like 'static' weel functions with <code>WeelRawMethod</code> or
+<code>WeelMethod</code>.</p>
+<p>The <code>usesOop</code> parameter is (right now) nothing more than a hint to indicate
+which naming schema should be used (see <a href="#intnames">Internal function naming</a>).</p>
+<p>When <code>isPrivate</code> is <code>false</code>, a global variable named <code>name</code> will be created
+and initialized with an empty array, which then receives all defined functions.</p>
+<p>If <code>isPrivate</code> is <code>true</code>, then no global variable will be created. The ValueMap
+which holds all the functions gets instead assigned to a static variable
+inside the class:</p>
+<pre><code>public static ValueMap ME;
+</code></pre>
+<p>This allows for easy 'invisible' class definition, which may get 'instantiated'
+using other methods/functions.</p>
+<p><strong>Remember:</strong> When you use Oop functions (called using <code>-&gt;</code>) you will always
+get the ValueMap (<code>this</code>) as the first parameter.</p>
+<p>Here's a simple example, wrapping a StringBuilder in a Weel class:</p>
+<pre><code>import com.github.rjeschke.weel.*;
+import com.github.rjeschke.weel.annotations.*;
+
+@WeelClass(name = "java.lang.StringBuilder", usesOop = true)
+public class MyStringBuilder
+{
+    @WeelMethod
+    public final static void ctor(final ValueMap thiz)
+    {
+        WeelOop.setInstance(thiz, new StringBuilder());
+    }
+
+    @WeelMethod
+    public final static void append(final ValueMap thiz, final Value value)
+    {
+        final StringBuilder sb = WeelOop.getInstance(thiz, StringBuilder.class);
+        sb.append(value.toString());
+    }
+
+    @WeelMethod(name = "toString")
+    public final static String sbToString(final ValueMap thiz)
+    {
+        final StringBuilder sb = WeelOop.getInstance(thiz, StringBuilder.class);
+        return sb.toString();
+    }
+}
+</code></pre>
+<p>And here's how you would use it from Weel:</p>
+<pre><code>sb = new(java.lang.StringBuilder);
+
+sb-&gt;append("Hello");
+sb-&gt;append(" world!");
+
+println(sb-&gt;toString());
+</code></pre>
+<hr />
 <h3 id="technical">Technical details</h3>
 <h4 id="perft">Performance</h4>
 <p>The reason why I rewrote Yjasl4 was <strong>speed</strong>. After some days of thinking
@@ -654,7 +805,7 @@ stack.</p>
 </li>
 <li><p>Anonymous closure function calls:</p>
 <p>These work exactly like stack calls (because they are stack calls) but a
-different invoker method is used which registes the function on the
+different invoker method is used which registers the function on the
 virtual function stack.</p>
 </li>
 <li><p>Type bound functions:</p>
@@ -671,7 +822,7 @@ in the Weel (that's why you can't uses overloading on anonymous functions).</p>
 <p>Declaring an anonymous function without closure variables only results in a
 Runtime.load(&hellip;) operation, loading the anonymous function (which is already
 compiled) by its function index.</p>
-<p>This behavious changes when closure variables are needed. Here every expression
+<p>This behaviour changes when closure variables are needed. Here every expression
 which creates such a function also creates a new object with a snapshot of its
 used outer variables.</p>
 <h4 id="intnames">Internal function naming</h4>
@@ -689,7 +840,7 @@ concatenated by <code>$$</code>, so <code>func arr:test(a, b)</code> will be nam
 <h4 id="compilation">Compilation</h4>
 <p>The Weel compiler does not do any Voodoo, it mostly chains calls to runtime
 methods, generates method calls and some IFEQs, IFNEs and GOTOs. It seems
-that weel performes so well because of the JIT compiler loving small methods.</p>
+that weel performs so well because of the JIT compiler loving small methods.</p>
 <p>So it's all a little bit cheating &hellip; but it works &hellip; and it's fast.</p>
 <hr />
 <h3 id="performance">Performance hints</h3>
@@ -714,12 +865,11 @@ operations.</p>
 </li>
 <li><p>Function calling speed (decreasing from top to bottom):</p>
 <ul>
-<li>Static Weel/Java&trade; function calls</li>
-<li>Static Java&trade; nice function calls</li>
-<li>Dynamic calls</li>
-<li>Type bound functions</li>
-<li>Dynamic calls with overload resolving</li>
-<li>Dynamic calls to closure functions</li>
+<li>Static Weel/Java&trade; function calls (1.00)</li>
+<li>Static Java&trade; nice function calls (1.08)</li>
+<li>Dynamic calls (1.18)</li>
+<li>Dynamic calls with overload resolving (1.62)</li>
+<li>Type bound functions (9.30) ?</li>
 </ul>
 <p>This is currently a good guess, I'll benchmark this as soon as the
 rest is stable.</p>
@@ -730,6 +880,8 @@ rest is stable.</p>
 
 </td></tr>
 <tr><td class="tfooter">&copy; Ren&eacute; Jeschke in 2011</td></tr>
+
 </table>
 </body>
 </html>
+
