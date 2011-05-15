@@ -14,7 +14,7 @@
 <tr><td class="theader">-- Weel --</td></tr>
 <tr><td class="tcontent" style="width: 100%">
 <h1>Weel - An extensible scripting language</h1>
-<p>Copyright &copy; 2011 René Jeschke <a href="&#x6d;&#97;i&#x6c;&#116;&#111;&#58;&#x72;&#101;&#x6e;&#x65;&#x5f;&#106;&#101;&#x73;&#x63;&#104;&#107;&#x65;&#64;&#121;&#x61;&#x68;&#111;&#x6f;&#46;&#100;&#x65;">&#114;&#101;&#x6e;&#x65;&#x5f;&#106;&#101;&#115;&#99;&#x68;&#x6b;&#101;&#x40;&#121;&#97;&#x68;&#111;&#x6f;&#46;&#x64;&#101;</a><br  />
+<p>Copyright &copy; 2011 René Jeschke <a href="&#x6d;&#x61;&#105;&#x6c;&#x74;&#111;&#58;&#114;&#101;&#x6e;&#x65;&#x5f;&#106;&#x65;&#115;&#x63;&#x68;&#107;e&#64;&#121;&#x61;&#104;&#111;&#x6f;&#x2e;&#x64;&#101;">&#114;e&#110;&#101;&#95;&#x6a;&#x65;&#115;&#99;&#104;&#x6b;&#x65;&#64;&#x79;&#97;&#x68;&#111;&#111;&#x2e;&#100;&#101;</a><br  />
 See LICENSE.txt for licensing information.</p>
 <hr />
 <ul>
@@ -234,12 +234,15 @@ letters, digits and <code>_</code> (underscore)</li>
 <li><code>&amp;</code> : Binary and</li>
 <li><code>|</code> : Binary or</li>
 <li><code>^</code> : Binary xor</li>
+<li><code>&gt;&gt;</code> : Binary signed right shift</li>
+<li><code>&gt;&gt;&gt;</code> : Binary unsigned right shift</li>
+<li><code>&lt;&lt;</code> : Binary left shift</li>
 <li><code>.</code> : Dot (named array indices)</li>
 <li><code>:</code> : Colon (declaring OOP functions)</li>
 <li><code>::</code> : Double colon (calling type bound functions)</li>
 <li><code>-&gt;</code> : Arrow (calling OOP functions)</li>
 <li><code>?</code> : Ternary (<code>&lt;cond&gt; ? &lt;expr&gt; : &lt;expr&gt;</code>)</li>
-<li><code>+=, -=, *=, /=, %=, &amp;=, |=, ^=, ..=</code></li>
+<li><code>+=, -=, *=, /=, %=, &amp;=, |=, ^=, ..=, ++=, &gt;&gt;=, &lt;&lt;=, &lt;&lt;&lt;=</code></li>
 </ul>
 <h4 id="reservedwords">Reserved words</h4>
 <pre><code>break,
