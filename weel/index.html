@@ -14,7 +14,7 @@
 <tr><td class="theader">-- Weel --</td></tr>
 <tr><td class="tcontent" style="width: 100%">
 <h1>Weel - An extensible scripting language</h1>
-<p>Copyright &copy; 2011 René Jeschke <a href="&#x6d;&#x61;&#105;&#x6c;&#x74;&#111;&#58;&#114;&#101;&#x6e;&#x65;&#x5f;&#106;&#x65;&#115;&#x63;&#x68;&#107;e&#64;&#121;&#x61;&#104;&#111;&#x6f;&#x2e;&#x64;&#101;">&#114;e&#110;&#101;&#95;&#x6a;&#x65;&#115;&#99;&#104;&#x6b;&#x65;&#64;&#x79;&#97;&#x68;&#111;&#111;&#x2e;&#100;&#101;</a><br  />
+<p>Copyright &copy; 2011 René Jeschke <a href="&#x6d;&#x61;i&#x6c;&#116;&#111;&#x3a;r&#x65;&#x6e;e&#x5f;&#106;&#x65;&#x73;&#x63;&#x68;&#x6b;&#101;&#x40;&#121;&#x61;&#x68;&#x6f;&#x6f;&#46;&#x64;&#x65;">&#x72;&#x65;n&#101;&#x5f;&#106;&#x65;&#115;&#x63;&#x68;&#107;&#x65;&#64;&#121;&#97;&#104;&#x6f;&#x6f;&#x2e;&#100;&#101;</a><br  />
 See LICENSE.txt for licensing information.</p>
 <hr />
 <ul>
@@ -54,6 +54,7 @@ See LICENSE.txt for licensing information.</p>
 </ul>
 </li>
 <li><a href="#performance">Performance hints</a></li>
+<li><a href="#bench">Benchmarks</a></li>
 </ul>
 <hr />
 <h3 id="overview">Overview</h3>
@@ -348,7 +349,7 @@ end
 <p>An <code>if</code> block may contain zero or more <code>elseif</code>s and zero or one <code>else</code>. The
 <code>else</code> clause must always be the last.</p>
 <h4 id="switch">switch, end</h4>
-<pre><code>switch(&lt;expr&gt;)
+<pre><code>switch &lt;expr&gt; do
     [case &lt;expr&gt;:]
         ...
         [break]
@@ -906,6 +907,34 @@ operations.</p>
 rest is stable.</p>
 </li>
 </ul>
+<hr />
+<h3 id="bench">Benchmarks</h3>
+<p>Based on <a href="http://shootout.alioth.debian.org/">http://shootout.alioth.debian.org/</a>, JRuby and Weel both run on
+Java&trade; SE Runtime Environment (build 1.6.0_24-b07)/Java HotSpot&trade; Server
+VM (build 19.1-b02, mixed mode) without any additional parameters.</p>
+<p>Benchmarked on an Athlon X2 2500MHz, Ubuntu 10.04 32 Bit, 2GiB RAM. Result is
+running time in seconds (full, i.e. creating a process, compiling and executing).</p>
+<p>I'll post some more results later.</p>
+<table>
+ <tr>
+   <th>n = 2000</th>
+   <th>Weel</th>
+   <th>Lua 5.1.4</th>
+   <th>JRuby 1.6.1</th>
+ </tr>
+ <tr>
+  <td>mandel</td>
+  <td>18.011</td>
+  <td>17.459</td>
+  <td>86.267</td>
+ </tr>
+ <tr>
+  <td>spectral-norm</td>
+  <td>33.415</td>
+  <td>53.703</td>
+  <td>237.102</td>
+ </tr>
+</table>
 <hr />
 <p>Git repository: <a href="https://github.com/rjeschke/weel">https://github.com/rjeschke/weel</a></p>
 
